@@ -29,10 +29,13 @@ This plug-in has been tested with bulk_extractor version 1.4
 6) Make the plugins:
 
 `cd plugins`
+
 `make plugins`
+
 `cd ..`
        
 7) Run bulk_extractor from compiled source code:
  
 `cd src`
+
 `./bulk_extractor -P ../plugins -h`
