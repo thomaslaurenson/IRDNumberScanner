@@ -4,38 +4,72 @@ A bulk_extractor scanner plug-in to detect and validate Inland Revenue (IRD) Num
 
 ## Install Instructions
 
-This plug-in has been tested with bulk_extractor version 1.4.0. You can download bulk_extractor from the digital corpora website:
+This plug-in has been tested with bulk_extractor version 1.5.5 and the development code hosted on GitHub (dated: 2018/05/15, commit: ecb627d7b60d5a34b51639a8deaffc4db59fda27). The following installation instructions outline how to install the IRDNumberScanner on the Git development version, using Ubuntu 18.04 LTS.
 
-`wget http://digitalcorpora.org/downloads/bulk_extractor/old/bulk_extractor-1.4.0.tar.gz` 
+Make sure git in installed:
 
-1) Copy the following files to bulk\_extractor-1.4.0/plugins. The scan\_ird.flex contains the IRDNumberScanner source code, the Makefile.am is an updated Makefile to resolve some compilation issues with the demo scanner plug-ins bundled with bulk_extractor. 
+`sudo apt install git`
 
-`scan_ird.flex`
+Clone the official bulk\_extractor repository:
 
-`Makefile.am`
+`git clone --recursive https://github.com/simsong/bulk_extractor.git` 
 
-2) Make sure you are in the root application directory (bulk_extractor-1.4.0/)
+Change to the bulk_extractor directory:
 
-3) Run autoconf again to create an updated Makefile.in from original Makefile.ac:
+`cd bulk_extractor`
 
-`autoreconf`
+Execute the provided script to configure Ubuntu system, which installs various system dependencies:
 
-4) Configure the build environment (this will generate a new plugins/Makefile that is fixed):
+`bash etc/CONFIGURE_UBUNTU18.bash`
+
+Run the bootstrap script:
+
+`chmod u+x bootstrap.sh`
+
+`./bootstrap.sh`
+
+Clone this (IRDNumberScanner) repository:
+
+`git clone https://github.com/thomaslaurenson/IRDNumberScanner.git`
+
+Copy the two required files (`scan_ird.flex` and `Makefile.am`) to the plugins directory for bulk\_extractor. These instructions that both bulk\_extractor and IRDNumberScanner repositories are in your home directory:
+
+`cp ~/IRDNumberScanner/scan_ird.flex ~/bulk_extractor/plugins/scan_ird.flex`
+
+`cp ~/IRDNumberScanner/Makefile.am ~/bulk_extractor/plugins/Makefile.am`
+
+Just to be clear: The `scan_ird.flex` file is the code implemented to perform IRD number scanning that is implemented as a plugin to bulk\_extractor. While the `Makefile.am` is a modified version of the original bulk\_extractor Makefile, used to compile the plugin source code. The only modifications to the `Makefile.am` file is the inclusion of the scan\_ird plugin, and disabling of the scan\_flexdemo plugin (as it was not operating correctly at time of the last development on this project).
+
+Make sure you are in the bulk\_extractor directory:
+
+`cd ~/bulk_extractor`
+
+Run the configure script:
 
 `./configure`
 
-5) Make the entire project:
+Now, compile (or make) the entire bulk\_extractor porject:
 
 `make`
-       
-6) Make the plugins:
 
-`cd plugins`
+Finally, the plugins also require compilation:
+
+`cd ~/bulk_extractor/plugins/`
 
 `make plugins`
 
-`cd ..`
-       
+You can either install bulk\_extractor system wide using the following command:
+
+`sudo make install`
+
+`bulk_extractor`
+
+Or, simply use the created binaries in the project:
+
+`cd ~/bulk_extractor`
+
+`./src/bulk_extractor`
+
 7) Run bulk_extractor from compiled source code:
  
 `cd src`
