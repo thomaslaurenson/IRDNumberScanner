@@ -1,3 +1,11 @@
+/*
+* A simple re-implementation of the IRD number scanner in pure C++
+* Useful for testing and development
+* Compile using: g++ validate_numbers.cpp -o validate_numbers
+* Permissions using: chmod u+x validate_numbers
+* Run using: ./validate_numbers
+*/
+
 /* Includes required for bulk_extractor plugin */
 #include <cstring>
 #include <cstdlib>
@@ -9,23 +17,18 @@
 /* Only required in validate_numbers.cpp */
 #include <ctime>
 
-/*
-* Check if a number is a valid NZ IRD number
-* Compile using: g++ validate_numbers.cpp -o validate_numbers
-* Permissions using: chmod u+x validate_numbers
-* Run using: ./validate_numbers
-*/
-static int validate(const char *digits) {
-    // cout << "  > Entering validate function...\n";
-    // cout << "  > Processing number: " << digits << '\n';
-
+/* 
+* Check if the extracted digits result in a valid IRD number
+* Refer to IRD validation sheet to see what else is implemented (starting on page 33):
+* http://www.ird.govt.nz/resources/e/c/ec5956fb-7427-4aba-97f6-74f54e0623c0/payroll_payday_filing_spec_2019_+v1.0.pdf
+* Return statement summary:
+* 0: failed IRD number validation check
+* 1: passed IRD number validation check
+*/ 
+static int validate_digits(char *digits) {
     /* Specify IRD number weightings */
     static int weightings1 [8] = {3, 2, 7, 6, 5, 4, 3, 2};
     static int weightings2 [8] = {7, 4, 3, 2, 5, 2, 7, 6};
-
-    /* Duplicate input array of digits */
-    char digits_process[strlen(digits) + 1];
-    strncpy(digits_process, digits, strlen(digits) + 1);
 
     /* Convert the extracted string from bulk_extractor to an int */
     int digits_int = atoi(digits);
@@ -38,29 +41,28 @@ static int validate(const char *digits) {
         */
 
         /* Set the checksum number */
-        int checksum = digits_process[strlen(digits_process) - 2] - '0';
-        // cout << "CHECKSUM: " << checksum << '\n';
+        int checksum = digits[strlen(digits) - 2] - '0';
 
-        if ( strlen(digits_process) == 8 ) {
+        if ( strlen(digits) == 8 ) {
             /* Check length of the IRD number */
             /* Pad to 8 digits if the IRD number is only 7 */
             memmove(
-                digits_process + 0 + 1,
-                digits_process + 0,
-                strlen(digits_process) - (0 + 1)
+                digits + 0 + 1,
+                digits + 0,
+                strlen(digits) - (0 + 1)
             );
-            digits_process[0] = '0';
+            digits[0] = '0';
         }
-        else if ( strlen(digits_process) == 9 ) {
-            digits_process[strlen(digits_process) - 1] = '\0';
+        else if ( strlen(digits) == 9 ) {
+            digits[strlen(digits) - 1] = '\0';
         }
 
         /* WEIGHTINGS: Round 1 */
         int total = 0;
 
-        for (int i = 0; i < strlen(digits_process); i++) {
+        for (int i = 0; i < strlen(digits); i++) {
             /* Convert specific digit string index to an int */
-            int num = digits_process[i] - '0';
+            int num = digits[i] - '0';
             /* Keep a running count of the total */
             /* This is the extracted number times the IRD weighting scheme */
             total += num * weightings1[i];
@@ -80,16 +82,17 @@ static int validate(const char *digits) {
             return 1;
         }
 
+        /* WEIGHTINGS: Round 2 */
         else if ( R1 == 10 ) {
             /* If remainder equals 10 */
             /* Reset total to 0 */
             total = 0;
 
-            int len = strlen(digits_process);
+            int len = strlen(digits);
 
             for (int i = 0; i < len; i++){
                 /* Convert digits index to int */
-                int num = digits_process[i] - '0';
+                int num = digits[i] - '0';
                 /* Keep a running count of the total */
                 /* This is the extracted number times the IRD weighting scheme */
                 total += num * weightings2[i];
@@ -105,12 +108,12 @@ static int validate(const char *digits) {
             }
             if ( checksum == R2 ) {
                 /* Determine if the checksum is same as remainder */
-                /* If so, input is an IRD number: return 2 */
-                return 2;
+                /* If so, input is an IRD number: return 1 */
+                return 1;
             }
         }
     }
-    return -1;
+    return 0;
 }
 
 /*
@@ -122,28 +125,28 @@ static int debugging_tests() {
     /* Quick test for valid numbers: */
     std::cout << ">>> Starting debugging tests...\n";
     char test1[] = {'1', '0', '1', '8', '7', '4', '0', '4', '\0'};
-    int result1 = validate(test1);
+    int result1 = validate_digits(test1);
 
     char test2[] = {'1', '0', '1', '8', '7', '1', '3', '0', '\0'};
-    int result2 = validate(test2);
+    int result2 = validate_digits(test2);
 
     char test3[] = {'1', '0', '0', '9', '6', '4', '3', '3', '\0'};
-    int result3 = validate(test3);
+    int result3 = validate_digits(test3);
 
     char test4[] = {'1', '0', '0', '9', '6', '4', '3', '5', '\0'};
-    int result4 = validate(test4);
+    int result4 = validate_digits(test4);
 
     if ( result1 == 1 &&
          result2 == 1 &&
-         result3 == 2 &&
-         result4 == 2) {
+         result3 == 1 &&
+         result4 == 1) {
             std::cout << ">>> SUCCESS: Debugging tests all passed\n";
+            return 1;
          }
     else {
         std::cout << ">>> ERROR: Debugging tests failed\n";
+        return 0;
     }
-
-    return 1;
 }
 
 /*
@@ -163,7 +166,7 @@ static int count_valid_numbers() {
         sprintf(input, "%d", i);
 
         int result;
-        result = validate(input);
+        result = validate_digits(input);
         if ( result == 1 || result == 2 ) {
             /* If valid, increase the count */
             count += 1;
