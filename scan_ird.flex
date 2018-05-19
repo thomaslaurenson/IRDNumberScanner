@@ -64,11 +64,11 @@ static int extract_digits(const char *buf, int len, char *digits){
     /* Potential IRD numbers will only have 2 delimiters */
 	if ( non_digit_count == 2 || non_digit_count == 0 ) {
         /* Return true (1) if the non-digit count in 0, or 2 */
-        return 1;
+        return 0;
     }
     
     /* Return false (0) if extraction is not sucessful */
-	return 0;
+	return -1;
 }
 
 /* 
