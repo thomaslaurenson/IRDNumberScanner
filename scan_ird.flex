@@ -1,10 +1,8 @@
 %{
 
 /* bulk_extractor include statements */
-#include "config.h"
+#include "../config.h"
 #include "be13_api/bulk_extractor_i.h"
-#include "utils.h"
-#include "histogram.h"
 
 /* C include statements */
 #include <cstring>
@@ -36,40 +34,6 @@ inline class ird_scanner *get_extra(yyscan_t yyscanner) {
 }
 
 /*
-* Validity check. This is the first function called.
-* Checks length, performs digit extraction and validates IRD numbers
-* Return statement summary:
-* 0: failed validity check
-* 1: passed validity check
-*/
-bool check(const char *buf, int len) {
-	if ( len > 11 ) { 
-		/* Return false (0) if length of buffer is greater than 11 */
-        return 0;
-	}
-
-    /* Maximum length of IR number is 11 */
-    /* This includes 8 digit max length, 2 delimiters, and a null */
-	char digits[11];
-
-    /* Initialize digits array with zeroes */
-	memset(digits, 0, sizeof(digits));
-
-	if ( extract_digits(buf, len, digits) ) {
-        /* Call the extract digits function */
-        /* Return false (0) if extract_digits test failed */
-        return 0;
-	}
-	if ( validate_digits(digits) ) {
-		/* Call the validate digits function */
-        /* Return false (0) if validate test failed */
-        return 0;
-	}
-    /* Return true (1) both tests passed */
-	return 1;
-}
-
-/*
 * Extract only digits from the buffer.
 * Return statement summary:
 * 0: failed extraction check
@@ -77,7 +41,7 @@ bool check(const char *buf, int len) {
 */
 static int extract_digits(const char *buf, int len, char *digits){
 	/* Specifiy variable for counting anything but a digit */
-    int non_digit_count = 0;
+	int non_digit_count = 0;
     int digit_count = 0;
     
     /* Loop through the buffer */
@@ -205,6 +169,42 @@ static int validate_digits(char *digits) {
     }
     return 0;
 }
+
+/*
+* Validity check. This is the first function called.
+* Checks length, performs digit extraction and validates IRD numbers
+
+* Return statement summary:
+* 0: failed validity check
+* 1: passed validity check
+*/
+bool check(const char *buf, int len) {
+	if ( len > 11 ) { 
+		/* Return false (0) if length of buffer is greater than 11 */
+        return 0;
+	}
+
+    /* Maximum length of IR number is 11 */
+    /* This includes 8 digit max length, 2 delimiters, and a null */
+	char digits[11];
+
+    /* Initialize digits array with zeroes */
+	memset(digits, 0, sizeof(digits));
+
+	if (extract_digits(buf, len, digits)) {
+        /* Call the extract digits function */
+        /* Return false (0) if extract_digits test failed */
+        return 0;
+	}
+	if (validate_digits(digits)) {
+		/* Call the validate digits function */
+        /* Return false (0) if validate test failed */
+        return 0;
+	}
+    /* Return true (1) both tests passed */
+	return 1;
+}
+
 
 #define SCANNER "scan_ird"
 
