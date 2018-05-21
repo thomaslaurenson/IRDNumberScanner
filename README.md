@@ -68,7 +68,7 @@ New Zealand IRD numbers may be stored in a variety of different structures or fo
 
 A full table of potential storage formats is provided in the table below. The scan\_ird plug-in search for all potential IRD numbers as documented by the table below:
 
-**IRD Number Description** | ** IRD Number Structure** | ** Example**
+**IRD Number Description** | **IRD Number Structure** | ** Example**
 -----|-----|-----
 8 digits | NNNNNNNN | 49091850
 8 digits with space delimiter | NN NNN NNN | 49 091 850
