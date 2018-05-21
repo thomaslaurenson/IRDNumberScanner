@@ -86,7 +86,8 @@ static int validate_digits(char *digits) {
 
     /* Convert the extracted string from bulk_extractor to an int */
     int digits_int = atoi(digits);
-
+ 
+    /* CHECK PHASE 1 */
     if ( digits_int > 10000000 && digits_int < 150000000 ) {
         /*
         * Valid IRD numbers are only between:
@@ -94,28 +95,27 @@ static int validate_digits(char *digits) {
         * Only continue if this is true
         */
 
+        /* CHECK PHASE 2 */
+        
         /* Set the checksum number */
-        int checksum = digits[strlen(digits) - 2] - '0';
+        int checksum = digits[strlen(digits) - 1] - '0';
 
-        if ( strlen(digits) == 8 ) {
-            /* Check length of the IRD number */
-            /* Pad to 8 digits if the IRD number is only 7 */
-            memmove(
-                digits + 0 + 1,
-                digits + 0,
-                strlen(digits) - (0 + 1)
-            );
+        /* Removing the trailing check digit */
+        digits[strlen(digits) - 1] = '\0';
+        
+        /* If digits length is 7, pad with a leading zero */
+        if ( strlen(digits) == 7 ) {
+            for (int i = strlen(digits); i > 0; i--) {
+                digits[i] = digits[i-1];
+            }
             digits[0] = '0';
         }
-        else if ( strlen(digits) == 9 ) {
-            digits[strlen(digits) - 1] = '\0';
-        }
 
-        /* WEIGHTINGS: Round 1 */
+        /* CHECK PHASE 3 */
         int total = 0;
 
         for (int i = 0; i < strlen(digits); i++) {
-            /* Convert specific digit string index to an int */
+            /* Convert specific digit index to an int */
             int num = digits[i] - '0';
             /* Keep a running count of the total */
             /* This is the extracted number times the IRD weighting scheme */
@@ -136,7 +136,7 @@ static int validate_digits(char *digits) {
             return 1;
         }
 
-        /* WEIGHTINGS: Round 2 */
+        /* CHECK PHASE 4 */
         else if ( R1 == 10 ) {
             /* If remainder equals 10 */
             /* Reset total to 0 */
@@ -160,6 +160,8 @@ static int validate_digits(char *digits) {
                 /* If remainder is greater than 0, remainder = 11 - remainder */
                 R2 = 11 - R2;
             }
+
+            /* CHECK PHASE 5 */
             if ( checksum == R2 ) {
                 /* Determine if the checksum is same as remainder */
                 /* If so, input is an IRD number: return 1 */

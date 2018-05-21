@@ -1,5 +1,5 @@
 /*
-* A simple re-implementation of the IRD number scanner in pure C++
+* A simple re-implementation of the IRD number scanner in C++
 * Useful for testing and development
 * Compile using: g++ validate_numbers.cpp -o validate_numbers
 * Permissions using: chmod u+x validate_numbers
@@ -10,12 +10,12 @@
 #include <cstring>
 #include <cstdlib>
 
-/* Includes required for this program */
+/* Includes required for this program (validate_numbers.cpp) */
 #include <iostream>
 #include <cstdio>
-
-/* Only required in validate_numbers.cpp */
 #include <ctime>
+#include <fstream>
+#include <string>
 
 /* 
 * Check if the extracted digits result in a valid IRD number
@@ -32,7 +32,8 @@ static int validate_digits(char *digits) {
 
     /* Convert the extracted string from bulk_extractor to an int */
     int digits_int = atoi(digits);
-
+ 
+    /* CHECK PHASE 1 */
     if ( digits_int > 10000000 && digits_int < 150000000 ) {
         /*
         * Valid IRD numbers are only between:
@@ -40,28 +41,27 @@ static int validate_digits(char *digits) {
         * Only continue if this is true
         */
 
+        /* CHECK PHASE 2 */
+        
         /* Set the checksum number */
-        int checksum = digits[strlen(digits) - 2] - '0';
+        int checksum = digits[strlen(digits) - 1] - '0';
 
-        if ( strlen(digits) == 8 ) {
-            /* Check length of the IRD number */
-            /* Pad to 8 digits if the IRD number is only 7 */
-            memmove(
-                digits + 0 + 1,
-                digits + 0,
-                strlen(digits) - (0 + 1)
-            );
+        /* Removing the trailing check digit */
+        digits[strlen(digits) - 1] = '\0';
+        
+        /* If digits length is 7, pad with a leading zero */
+        if ( strlen(digits) == 7 ) {
+            for (int i = strlen(digits); i > 0; i--) {
+                digits[i] = digits[i-1];
+            }
             digits[0] = '0';
         }
-        else if ( strlen(digits) == 9 ) {
-            digits[strlen(digits) - 1] = '\0';
-        }
 
-        /* WEIGHTINGS: Round 1 */
+        /* CHECK PHASE 3 */
         int total = 0;
 
         for (int i = 0; i < strlen(digits); i++) {
-            /* Convert specific digit string index to an int */
+            /* Convert specific digit index to an int */
             int num = digits[i] - '0';
             /* Keep a running count of the total */
             /* This is the extracted number times the IRD weighting scheme */
@@ -82,7 +82,7 @@ static int validate_digits(char *digits) {
             return 1;
         }
 
-        /* WEIGHTINGS: Round 2 */
+        /* CHECK PHASE 4 */
         else if ( R1 == 10 ) {
             /* If remainder equals 10 */
             /* Reset total to 0 */
@@ -106,6 +106,8 @@ static int validate_digits(char *digits) {
                 /* If remainder is greater than 0, remainder = 11 - remainder */
                 R2 = 11 - R2;
             }
+
+            /* CHECK PHASE 5 */
             if ( checksum == R2 ) {
                 /* Determine if the checksum is same as remainder */
                 /* If so, input is an IRD number: return 1 */
@@ -120,26 +122,33 @@ static int validate_digits(char *digits) {
 * Function to test a set of four simple debugging numbers
 */
 static int debugging_tests() {
-    int result;
-
-    /* Quick test for valid numbers: */
     std::cout << ">>> Starting debugging tests...\n";
-    char test1[] = {'1', '0', '1', '8', '7', '4', '0', '4', '\0'};
+
+    /* Specificy documented IR test numbers */
+    char test1[] = {'4', '9', '0', '9', '1', '8', '5', '0', '\0'}; // valid
     int result1 = validate_digits(test1);
 
-    char test2[] = {'1', '0', '1', '8', '7', '1', '3', '0', '\0'};
+    char test2[] = {'3', '5', '9', '0', '1', '9', '8', '1', '\0'}; // valid
     int result2 = validate_digits(test2);
 
-    char test3[] = {'1', '0', '0', '9', '6', '4', '3', '3', '\0'};
+    char test3[] = {'4', '9', '0', '9', '8', '5', '7', '6', '\0'}; // valid
     int result3 = validate_digits(test3);
 
-    char test4[] = {'1', '0', '0', '9', '6', '4', '3', '5', '\0'};
+    char test4[] = {'1', '3', '6', '4', '1', '0', '1', '3', '2', '\0'}; // valid
     int result4 = validate_digits(test4);
 
+    char test5[] = {'1', '3', '6', '4', '1', '0', '1', '3', '3', '\0'}; // invalid
+    int result5 = validate_digits(test5);
+
+    char test6[] = {'9', '1', '2', '5', '5', '6', '8' , '\0'}; // invalid
+    int result6 = validate_digits(test6);
+    
     if ( result1 == 1 &&
          result2 == 1 &&
          result3 == 1 &&
-         result4 == 1) {
+         result4 == 1 &&
+         result5 == 0 &&
+         result6 == 0 ) {
             std::cout << ">>> SUCCESS: Debugging tests all passed\n";
             return 1;
          }
@@ -150,48 +159,117 @@ static int debugging_tests() {
 }
 
 /*
+* Function to read a txt file of potential numbers
+* Validate each number using the validate_digits function
+*/
+static int validate_numbers(std::string filename) {
+    std::ifstream infile(filename);
+    std::string line; 
+    
+    /* Process input file one line at a time */
+    while (std::getline(infile, line)) {
+        std::cout << "  > Processing: " << line << "\n";
+
+        /* Convert string to char array for validate_digits input */
+        char input[line.length()+1]; 
+     
+        /* Copy string to char array */
+        strcpy(input, line.c_str()); 
+
+        /* Run validate_digits on input line */ 
+        int result = validate_digits(input);
+
+        /* Print results to user */
+        if (result == 0) {
+            std::cout << "  > Result: Failed\n";
+        }
+        else if (result == 1) {
+            std::cout << "  > Result: Passed\n";
+        }
+    }
+}
+
+/*
 * Function to test all potential numbers
 * Should return 13884380
 * Current time: 23 seconds (in VM)
 */
-static int count_valid_numbers() {
+void generate_valid_numbers() {
     int count = 0;
-
-    std::cout << ">>> Starting validation test...\n";
 
     for( int i = 10000000; i < 150000000; i = i + 1 ) {
         /* Test the available IRD number range */
         /* This tests all 140 million possible combinations */
         char input[10];
         sprintf(input, "%d", i);
+        char saved[10];
+        sprintf(saved, "%d", i);
 
-        int result;
-        result = validate_digits(input);
-        if ( result == 1 || result == 2 ) {
+        int result = validate_digits(input);
+        if ( result == 1 ) {
             /* If valid, increase the count */
-            count += 1;
+            std::cout << saved << "\n";
         }
     }
-    return count;
 }
 
-int main() {
-    /* Execute the debugging test */
-    int debug = debugging_tests();
+void help_menu() {
+    std::cout << "Description: validate_numbers is a simple New Zealand Inland Revenue number\n";
+    std::cout << "             validator. It is the pure C++ code implementation from the\n";
+    std::cout << "             IRDNumberScanner plug-in for the bulk_extractor tool.\n";
+    std::cout << "      Usage: validate_numbers [options]\n\n";
+    std::cout << "    Options: validate - input a text file of potential IRD numbers to validate\n";
+    std::cout << "             generate - output a list of all potentially valid URD numbers\n";
+    std::cout << "   Examples: ./validate_numbers validate file.txt\n";
+    std::cout << "             ./validate_numbers generate\n";  
+    std::cout << "             ./validate_numbers test\n";
+}
 
+int main(int argc, char** argv) {
+    
     /* Start the clock */
-    clock_t begin = clock();
+    clock_t begin = clock();    
 
-    /* Execute the number validity test */
-    int result = count_valid_numbers();
-    std::cout << "Total valid numbers: " << result << "\n";
+    if (argc == 1) {
+        help_menu();
+        return 0;
+    }
+    else if (argc > 1) {
+        if (std::string(argv[1]) == "test") {
+            /* Execute the debugging test */
+            int debug = debugging_tests();
+            std::cout << ">>> Exiting.\n";
+        }
+        else if (std::string(argv[1]) == "generate") {
+            /* Execute the number validity test */
+            generate_valid_numbers();
+            return 0;
+        }
+        else if (std::string(argv[1]) == "validate") {
+            /* Validate a file of IRD numbers */
+            /* Format of file: one IRD number per line, using LF line endings */
+            if (argv[2] != NULL) {
+                std::string filename = argv[2];
+                std::cout << ">>> Processing file: " << filename << "\n";
+                validate_numbers(filename);
+            }
+        }
+        else {
+            help_menu();
+            return 0;
+        }
+    }
+    else {
+        help_menu();
+        return 0;
+    }
 
     /* Stop the clock */
     clock_t end = clock();
 
     /* Print the elapsed time (in seconds) */
     double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-    std::cout << "Time elapsed: " << elapsed_secs << "\n";
+    std::cout << ">>> Time elapsed: " << elapsed_secs << "\n";
 
     return 0;
 }
