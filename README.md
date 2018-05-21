@@ -38,7 +38,7 @@ Compile bulk\_extractor:
 
 This repository hosts the code produced as a result of the research performed by Henry Gee for his Master's thesis research conducted at the University of Otago. In addition, I have continued development of the project adding additional tools and documentation so that the project remains relevant and useful to computer forensic practitioners.
 
-You can access Henry Gee Master's Thesis from the (http://hdl.handle.net/10523/6261)[OUR Archive] hosted by the University of Otago. In addition, you can access the resultant academic publication of the paper submitted to the 2015 Australian Digital Forensics Conference, available online from the (http://ro.ecu.edu.au/cgi/viewcontent.cgi?article=1149&context=adf)[Edith Cowen University Research Online] repository. Finally, the associated conference presentation entitled (http://thomaslaurenson.com/files/SECAU2015_IRD.pdf)[Improving the Detection and Validation of Inland Revenue Numbers] is available on my personal website.
+You can access Henry Gee Master's Thesis from the [OUR Archive](http://hdl.handle.net/10523/6261) hosted by the University of Otago. In addition, you can access the resultant academic publication of the paper submitted to the 2015 Australian Digital Forensics Conference, available online from the [Edith Cowen University Research Online](http://ro.ecu.edu.au/cgi/viewcontent.cgi?article=1149&context=adf) repository. Finally, the associated conference presentation entitled [Improving the Detection and Validation of Inland Revenue Numbers](http://thomaslaurenson.com/files/SECAU2015_IRD.pdf) is available on my personal website.
 
 ## Project Structure
 
@@ -51,7 +51,7 @@ This project comes with a collection of useful programs and files. Below is a br
 
 ## IRD Number Format and Validation Method
 
-New Zealand Inland Revenue (IR/IRD) numbers have a specified number format and validation method. The most current documentation (2018) from the Inland Revenue department is (http://www.ird.govt.nz/resources/e/c/ec5956fb-7427-4aba-97f6-74f54e0623c0/payroll_payday_filing_spec_2019_+v1.0.pdf)[available online as a PDF]. Specifically, see pages 33 to 35 of the provided link. Below is a summary of the IRD number structure and validation process.
+New Zealand Inland Revenue (IR/IRD) numbers have a specified number format and validation method. The most current documentation (2018) from the Inland Revenue department is [available online as a PDF](http://www.ird.govt.nz/resources/e/c/ec5956fb-7427-4aba-97f6-74f54e0623c0/payroll_payday_filing_spec_2019_+v1.0.pdf). Specifically, see pages 33 to 35 of the provided link. Below is a summary of the IRD number structure and validation process.
 
 An IRD number is an eight or nine digit number consisting of the following components:
 
@@ -167,7 +167,7 @@ This command specifies that only the IRD scanner should be run (`-E ird`), that 
 
 ## TODO
 
-- Finish documentation for IRD number validation section of README.md
-- Implement Inland Revenue provided examples for testing in validate\_numbers program
-- Implement valid IR number generation in validate\_numbers program
+- ~~Finish documentation for IRD number validation section of README.md~~
+- ~~Implement Inland Revenue provided examples for testing in validate\_numbers program~~
+- ~~Implement valid IR number generation in validate\_numbers program~~
 - Re-implement histogram functionality when resolved
